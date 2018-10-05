@@ -3,6 +3,12 @@ import numpy as np
 from collections import Counter
 from math import log
 from timeit import default_timer as timer
+import matplotlib.pyplot as plt
+
+
+# for test only
+def create_dataset():
+    return [[1, 1, 'yes'], [0, 1, 'yes'], [1, 0, 'no'], [0, 0, 'no'], [0, 0, 'no'], ], ['no surfacing', 'flippers']
 
 
 def get_class(data):
@@ -19,39 +25,29 @@ def calc_shannon_ent(data):
     return shannon_ent
 
 
-# for test only
-def create_dataset():
-    data = [[1, 1, 'yes'], [0, 1, 'yes'], [1, 0, 'no'], [0, 0, 'no'], [0, 0, 'no'], ]
-    labels = ['no surfacing', 'flippers']
-    classes = get_class(data)
-    return data, labels, classes
-
-
-def dataset_filter(data, filter):
-    return [item for item in data if filter(item)]
-
-
+# return data and labels
 def load_data():
-    data = np.loadtxt('page-blocks.data')
-    labels = ["height", "lenght", "area", "eccen", "p_black",
-              "p_and", "mean_tr", "blackpix", "blackand", "wb_trans"]
-    return data, labels
+    return np.loadtxt('data/page-blocks.data'), ["height", "lenght", "area", "eccen", "p_black",
+                                                 "p_and", "mean_tr", "blackpix", "blackand", "wb_trans"]
 
 
-def feature_to_split(data, labels, classes):
+# choose the feature with best information gain
+# two step: find the point with the max info main in one feature -> find the max in all features
+def feature_to_split(data, labels):
     base_env = calc_shannon_ent(data)
     base_info_gain = 0.0
     best_feature = -1
     bound = 0.0
     for index in range(len(labels)):
-        features = sorted([item[index] for item in data])
+        d = data[:, [index, -1]]
+        features = d[np.argsort(d[:, 0])[::-1]]
         for i in range(len(features) - 1):
-            if classes[i + 1] == classes[i] or features[i + 1] == features[i]:
+            if features[i + 1][1] == features[i][1] or features[i + 1][0] == features[i][0]:
                 continue
             # print(index, i)
-            boundary = (features[i] + features[i + 1]) / 2
-            sub_g = dataset_filter(data, lambda item: item[index] > boundary)
-            sub_l = dataset_filter(data, lambda item: item[index] <= boundary)
+            boundary = (features[i][1] + features[i + 1][1]) / 2
+            sub_g = data[data[:, index] > boundary]
+            sub_l = data[data[:, index] <= boundary]
             prob_g = len(sub_g) / float(len(data))
             prob_l = len(sub_l) / float(len(data))
             new_ent = prob_g * calc_shannon_ent(sub_g) + prob_l * calc_shannon_ent(sub_l)
@@ -63,29 +59,17 @@ def feature_to_split(data, labels, classes):
     return best_feature, base_info_gain, bound
 
 
-def tree(data, labels, features):
-    classes = get_class(data)
-    if classes.count(classes[0]) == len(classes):
-        return classes[0]
-    # if len(data) < 5:
-    #     return Counter(classes).most_common(1)[0][0]
-
-    best_feature, info_gain, boundary = feature_to_split(data, labels, classes)
+# find feature with max info gain -> 1. if info gain too small, return most common class, 2. split and recur
+def tree(data, labels):
+    best_feature, info_gain, boundary = feature_to_split(data, labels)
+    # almost to one side(all the same & only one & etc)
     if info_gain < 0.0001:
-        return Counter(classes).most_common(1)[0][0]
+        return Counter(get_class(data)).most_common(1)[0][0]
 
-    label = labels[best_feature]
-
-    features.append(label)
-    print(len(data))
-    my_tree = {'label': label, 'val': boundary,
-               'left': tree(dataset_filter(data, lambda item: item[best_feature] <= boundary),
-                            labels, features),
-               'right': tree(dataset_filter(data, lambda item: item[best_feature] > boundary),
-                             labels, features)
-               }
-
-    return my_tree
+    return {'label': labels[best_feature], 'val': boundary,
+            'left': tree(data[data[:, best_feature] <= boundary], labels),
+            'right': tree(data[data[:, best_feature] > boundary], labels)
+            }
 
 
 def classify(tree, labels, test):
@@ -98,28 +82,47 @@ def classify(tree, labels, test):
 
 
 if __name__ == '__main__':
+    # load data
     data, labels = load_data()
-    t = np.vsplit(data, np.array([1]))
-    train = t[0]
-    test = t[1]
+    c = [0, 0, 0, 0, 0]
+    for key, value in Counter(get_class(data)).items():
+        c[int(key - 1)] += int(value / 10)
 
+    train = np.zeros((0, 11))
+    test = np.zeros((0, 11))
+
+    for item in data:
+        if c[int(item[-1] - 1)] > 0:
+            test = np.insert(test, 0, values=item, axis=0)
+            c[int(item[-1] - 1)] -= 1
+        else:
+            train = np.insert(train, 0, values=item, axis=0)
+
+    # t = np.vsplit(data, np.array([5000]))
+    # train = t[0]
+    # test = t[1]
+
+    # create tree
     start = timer()
-
-    features = []
-    t = tree(train, labels, features)
-    # print(t)
+    t = tree(train, labels)
     end = timer()
     print('use %ds to create the tree' % (end - start))
+    f = open('out/tree.json','w')
+    f.write(str(t))
+
+    # test
     cnt = [0, 0, 0, 0, 0]
     right = [0, 0, 0, 0, 0]
     for item in test:
-        result, value = classify(t, labels, item)
-        cnt[int(item[-1] - 1)] += 1
-        if result:
-            right[int(item[-1] - 1)] += 1
+        value = int(item[-1] - 1)
+        cnt[value] += 1
+        success, label = classify(t, labels, item)
+        if success:
+            right[value] += 1
         else:
-            print(item[-1], value)
+            print(value, label)
 
+    # print result
     print('Use %d test case, %d is right, accuracy is %.2f' % (sum(cnt), sum(right), sum(right) / sum(cnt)))
     for i in range(5):
         if cnt[i] != 0:
