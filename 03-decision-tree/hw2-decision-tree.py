@@ -107,10 +107,7 @@ def classify(tree, labels, test):
         return classify(tree['right'], labels, test)
 
 
-
-
-
-if __name__ == '__main__':
+def decision_tree():
     # load data
     data, labels = load_data()
     c = [0, 0, 0, 0, 0]
@@ -159,3 +156,7 @@ if __name__ == '__main__':
         if cnt[i] != 0:
             print('Use %d test case for %d, %d is right, accuracy is %.2f' %
                   (cnt[i], i + 1, right[i], right[i] / cnt[i]))
+
+
+if __name__ == '__main__':
+    decision_tree()
