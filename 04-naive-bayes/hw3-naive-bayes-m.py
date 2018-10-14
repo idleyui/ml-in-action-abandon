@@ -4,10 +4,12 @@ from math import log
 
 import numpy as np
 
+train_num = 12000
+
 
 def load_data():
     d = np.loadtxt('data/nursery.data', delimiter=',', dtype=np.unicode)
-    train, test = np.vsplit(np.delete(d, -1, axis=1), np.array([10000]))
+    train, test = np.vsplit(np.delete(d, -1, axis=1), np.array([train_num]))
     mp = {item: i for i, item in enumerate(list(np.unique(d[:, -1])))}
     classes = np.array([mp[item] for item in d[:, -1]])
     return np.delete(d, -1, axis=1), train, test, classes
@@ -23,7 +25,6 @@ def trainNB0(data, classes):
         pDenom[0][classes[i]] += sum(doc)
     vector = [pNum[i] / pDenom[0][i] for i in range(len(pNum))]
     p = [class2cnt[i] / len(classes) for i in range(5)]
-    # p = [count / len(classes) for cls, count in class2cnt.items()]
     return np.array(vector), p
 
 
@@ -31,7 +32,6 @@ def classify(vec2cls, vecs, ps, classes):
     p_list = []
     for i in range(len(ps)):
         p_list.append(sum(vec2cls * vecs[i]) * ps[i])
-        # p_list.append(reduce(lambda x, y: x * y, vec2cls * vecs[i]) * ps[i])
     return p_list.index(max(p_list))
 
 
@@ -57,10 +57,10 @@ def run():
     cnt = 0
     for i, item in enumerate(test_mat):
         c = classify(item, vector, p, classes)
-        # print(c, classes[10000 + i])
-        if c == classes[10000 + i]:
+        # print(c, classes[train_num+ i])
+        if c == classes[train_num + i]:
             cnt += 1
-    print(cnt/ len(test_mat))
+    print(cnt / len(test_mat))
 
 
 def t_word2vec():
