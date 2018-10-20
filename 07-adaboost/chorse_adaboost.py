@@ -175,6 +175,7 @@ if __name__ == '__main__':
 
 
     weakClassArr, aggClassEst = adaBoostTrainDS(dataArr, LabelArr)
+    # test token
     # print(weakClassArr)
     predictions = adaClassify(dataArr, weakClassArr)
     errArr = np.mat(np.ones((len(dataArr), 1)))
