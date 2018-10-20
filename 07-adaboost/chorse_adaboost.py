@@ -17,7 +17,7 @@ Modify:
 
 def loadDataSet(fileName):
     numFeat = len((open(fileName).readline().split('\t')))
-    dataMat = [];
+    dataMat = []
     labelMat = []
     fr = open(fileName)
     for line in fr.readlines():
@@ -157,8 +157,8 @@ def adaClassify(datToClass, classifierArr):
 
 
 if __name__ == '__main__':
-    # dataArr, LabelArr = loadDataSet('horseColicTraining2.txt')
     dataArr, LabelArr = load_data('data/student-mat.txt')
+    # dataArr, LabelArr = load_data('data/student-por.txt')
     da = []
     for d in dataArr:
         da.append(list(d))
@@ -166,6 +166,7 @@ if __name__ == '__main__':
     LabelArr = list(LabelArr)
 
     testArr, testLabelArr = load_data('data/student-por.txt')
+    # testArr, testLabelArr = load_data('data/student-mat.txt')
     ta = []
     for d in testArr:
         ta.append(list(d))
@@ -174,7 +175,7 @@ if __name__ == '__main__':
 
 
     weakClassArr, aggClassEst = adaBoostTrainDS(dataArr, LabelArr)
-    print(weakClassArr)
+    # print(weakClassArr)
     predictions = adaClassify(dataArr, weakClassArr)
     errArr = np.mat(np.ones((len(dataArr), 1)))
     print('训练集的错误率:%.3f%%' % float(errArr[predictions != np.mat(LabelArr).T].sum() / len(dataArr) * 100))

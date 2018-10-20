@@ -58,7 +58,7 @@ def str_feature_to_int(arr: np.ndarray, trans_list: list):
     uniq_col_val = [np.unique(arr[:, i]) for i in trans_list]
     v2i_list = []
     for v in uniq_col_val:
-        v2i_list.append({v:i for i, v in enumerate(v)})
+        v2i_list.append({v: i for i, v in enumerate(v)})
 
     # step 2:give value for each item if item's column in list
     result = np.zeros((row, column))

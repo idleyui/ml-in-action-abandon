@@ -33,7 +33,7 @@ def sv():
     cnt = 0
     for i in range(len(d)):
         classNumber = d[i][-1]
-        vectorUnderTest = d[i][0:-1].reshape((1, 24))
+        vectorUnderTest = d[i][0:-1].reshape((1, -1))
         classifierResult = clf.predict(vectorUnderTest)
         print("分类返回结果为%d\t真实结果为%d" % (classifierResult, classNumber))
         if classifierResult != classNumber:
