@@ -1,34 +1,6 @@
 # -*-coding:utf-8 -*-
 import numpy as np
-import matplotlib.pyplot as plt
 import np_util
-
-"""
-Author:
-	Jack Cui
-Blog:
-    http://blog.csdn.net/c406495762
-Zhihu:
-    https://www.zhihu.com/people/Jack--Cui/
-Modify:
-	2017-10-10
-"""
-
-
-def loadDataSet(fileName):
-    numFeat = len((open(fileName).readline().split('\t')))
-    dataMat = []
-    labelMat = []
-    fr = open(fileName)
-    for line in fr.readlines():
-        lineArr = []
-        curLine = line.strip().split('\t')
-        for i in range(numFeat - 1):
-            lineArr.append(float(curLine[i]))
-        dataMat.append(lineArr)
-        labelMat.append(float(curLine[-1]))
-
-    return dataMat, labelMat
 
 
 def load_data(filename):
@@ -43,16 +15,6 @@ def load_data(filename):
 
 
 def stumpClassify(dataMatrix, dimen, threshVal, threshIneq):
-    """
-    单层决策树分类函数
-    Parameters:
-        dataMatrix - 数据矩阵
-        dimen - 第dimen列，也就是第几个特征
-        threshVal - 阈值
-        threshIneq - 标志
-    Returns:
-        retArray - 分类结果
-    """
     retArray = np.ones((np.shape(dataMatrix)[0], 1))  # 初始化retArray为1
     if threshIneq == 'lt':
         retArray[dataMatrix[:, dimen] <= threshVal] = -1.0  # 如果小于阈值,则赋值为-1
@@ -62,17 +24,6 @@ def stumpClassify(dataMatrix, dimen, threshVal, threshIneq):
 
 
 def buildStump(dataArr, classLabels, D):
-    """
-    找到数据集上最佳的单层决策树
-    Parameters:
-        dataArr - 数据矩阵
-        classLabels - 数据标签
-        D - 样本权重
-    Returns:
-        bestStump - 最佳单层决策树信息
-        minError - 最小误差
-        bestClasEst - 最佳的分类结果
-    """
     dataMatrix = np.mat(dataArr);
     labelMat = np.mat(classLabels).T
     m, n = np.shape(dataMatrix)
@@ -102,16 +53,6 @@ def buildStump(dataArr, classLabels, D):
 
 
 def adaBoostTrainDS(dataArr, classLabels, numIt=40):
-    """
-    使用AdaBoost算法提升弱分类器性能
-    Parameters:
-        dataArr - 数据矩阵
-        classLabels - 数据标签
-        numIt - 最大迭代次数
-    Returns:
-        weakClassArr - 训练好的分类器
-        aggClassEst - 类别估计累计值
-    """
     weakClassArr = []
     m = np.shape(dataArr)[0]
     D = np.mat(np.ones((m, 1)) / m)  # 初始化权重
@@ -137,14 +78,6 @@ def adaBoostTrainDS(dataArr, classLabels, numIt=40):
 
 
 def adaClassify(datToClass, classifierArr):
-    """
-    AdaBoost分类函数
-    Parameters:
-        datToClass - 待分类样例
-        classifierArr - 训练好的分类器
-    Returns:
-        分类结果
-    """
     dataMatrix = np.mat(datToClass)
     m = np.shape(dataMatrix)[0]
     aggClassEst = np.mat(np.zeros((m, 1)))
@@ -172,7 +105,6 @@ if __name__ == '__main__':
         ta.append(list(d))
     testArr = ta
     testLabelArr = list(testLabelArr)
-
 
     weakClassArr, aggClassEst = adaBoostTrainDS(dataArr, LabelArr)
     # test token

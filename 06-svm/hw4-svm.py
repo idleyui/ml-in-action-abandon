@@ -5,28 +5,8 @@ import random
 import np_util
 from collections import Counter
 
-"""
-Author:
-	Jack Cui
-Blog:
-    http://blog.csdn.net/c406495762
-Zhihu:
-    https://www.zhihu.com/people/Jack--Cui/
-Modify:
-	2017-10-03
-"""
-
 
 class optStruct:
-    """
-    数据结构，维护所有需要操作的值
-    Parameters：
-        dataMatIn - 数据矩阵
-        classLabels - 数据标签
-        C - 松弛变量
-        toler - 容错率
-        kTup - 包含核函数信息的元组,第一个参数存放核函数类别，第二个参数存放必要的核函数需要用到的参数
-    """
 
     def __init__(self, dataMatIn, classLabels, C, toler, kTup):
         self.X = dataMatIn  # 数据矩阵
@@ -43,15 +23,6 @@ class optStruct:
 
 
 def kernelTrans(X, A, kTup):
-    """
-    通过核函数将数据转换更高维的空间
-    Parameters：
-        X - 数据矩阵
-        A - 单个数据的向量
-        kTup - 包含核函数信息的元组
-    Returns:
-        K - 计算的核K
-    """
     m, n = np.shape(X)
     K = np.mat(np.zeros((m, 1)))
     if kTup[0] == 'lin':
@@ -66,49 +37,13 @@ def kernelTrans(X, A, kTup):
     return K  # 返回计算的核K
 
 
-def loadDataSet(fileName):
-    """
-    读取数据
-    Parameters:
-        fileName - 文件名
-    Returns:
-        dataMat - 数据矩阵
-        labelMat - 数据标签
-    """
-    dataMat = [];
-    labelMat = []
-    fr = open(fileName)
-    for line in fr.readlines():  # 逐行读取，滤除空格等
-        lineArr = line.strip().split('\t')
-        dataMat.append([float(lineArr[0]), float(lineArr[1])])  # 添加数据
-        labelMat.append(float(lineArr[2]))  # 添加标签
-    return dataMat, labelMat
-
-
 def calcEk(oS, k):
-    """
-    计算误差
-    Parameters：
-        oS - 数据结构
-        k - 标号为k的数据
-    Returns:
-        Ek - 标号为k的数据误差
-    """
     fXk = float(np.multiply(oS.alphas, oS.labelMat).T * oS.K[:, k] + oS.b)
     Ek = fXk - float(oS.labelMat[k])
     return Ek
 
 
 def selectJrand(i, m):
-    """
-    函数说明:随机选择alpha_j的索引值
-
-    Parameters:
-        i - alpha_i的索引值
-        m - alpha参数个数
-    Returns:
-        j - alpha_j的索引值
-    """
     j = i  # 选择一个不等于i的j
     while (j == i):
         j = int(random.uniform(0, m))
@@ -116,16 +51,6 @@ def selectJrand(i, m):
 
 
 def selectJ(i, oS, Ei):
-    """
-    内循环启发方式2
-    Parameters：
-        i - 标号为i的数据的索引值
-        oS - 数据结构
-        Ei - 标号为i的数据误差
-    Returns:
-        j, maxK - 标号为j或maxK的数据的索引值
-        Ej - 标号为j的数据误差
-    """
     maxK = -1;
     maxDeltaE = 0;
     Ej = 0  # 初始化
@@ -148,28 +73,11 @@ def selectJ(i, oS, Ei):
 
 
 def updateEk(oS, k):
-    """
-    计算Ek,并更新误差缓存
-    Parameters：
-        oS - 数据结构
-        k - 标号为k的数据的索引值
-    Returns:
-        无
-    """
     Ek = calcEk(oS, k)  # 计算Ek
     oS.eCache[k] = [1, Ek]  # 更新误差缓存
 
 
 def clipAlpha(aj, H, L):
-    """
-    修剪alpha_j
-    Parameters:
-        aj - alpha_j的值
-        H - alpha上限
-        L - alpha下限
-    Returns:
-        aj - 修剪后的alpah_j的值
-    """
     if aj > H:
         aj = H
     if L > aj:
@@ -178,15 +86,6 @@ def clipAlpha(aj, H, L):
 
 
 def innerL(i, oS):
-    """
-    优化的SMO算法
-    Parameters：
-        i - 标号为i的数据的索引值
-        oS - 数据结构
-    Returns:
-        1 - 有任意一对alpha值发生变化
-        0 - 没有任意一对alpha值发生变化或变化太小
-    """
     # 步骤1：计算误差Ei
     Ei = calcEk(oS, i)
     # 优化alpha,设定一定的容错率。
@@ -256,19 +155,6 @@ def load_dataset1(filename):
 
 
 def smoP(dataMatIn, classLabels, C, toler, maxIter, kTup=('lin', 0)):
-    """
-    完整的线性SMO算法
-    Parameters：
-        dataMatIn - 数据矩阵
-        classLabels - 数据标签
-        C - 松弛变量
-        toler - 容错率
-        maxIter - 最大迭代次数
-        kTup - 包含核函数信息的元组
-    Returns:
-        oS.b - SMO算法计算的b
-        oS.alphas - SMO算法计算的alphas
-    """
     oS = optStruct(np.mat(dataMatIn), np.mat(classLabels).transpose(), C, toler, kTup)  # 初始化数据结构
     iter = 0  # 初始化当前迭代次数
     entireSet = True
@@ -295,13 +181,6 @@ def smoP(dataMatIn, classLabels, C, toler, maxIter, kTup=('lin', 0)):
 
 
 def tesRbf(k1=1.3):
-    """
-    测试函数
-    Parameters:
-        k1 - 使用高斯核函数的时候表示到达率
-    Returns:
-        无
-    """
     datas = load_dataset1('data/post-operative.data')  # 加载训练集
     dataArr = []
     labelArr = []
@@ -329,7 +208,7 @@ def tesRbf(k1=1.3):
     # b, alphas = smoP(dataArr, labelArr, 200, 0.0001, 100, ('rbf', k1))  # 根据训练集计算b和alphas
     allData = np.insert(datas[0], 0, values=datas[1], axis=0)
     allData = np.insert(allData, 0, values=datas[2], axis=0)
-    allLabel = allData[:,-1]
+    allLabel = allData[:, -1]
     allData = np.delete(allData, (-1), axis=1)
 
     pred = []
@@ -348,8 +227,8 @@ def tesRbf(k1=1.3):
             predict = kernelEval.T * np.multiply(labelSV, alphas[i][svInd]) + float(b[i])  # 根据支持向量的点，计算超平面，返回预测结果
             p.append(labelMap[i][np.sign(float(predict))])
         pred.append(p)
-            # if np.sign(predict) != np.sign(labelArr[i]): errorCount += 1  # 返回数组中各元素的正负符号，用1和-1表示，并统计错误个数
-            # print(predict, labelArr[i])
+        # if np.sign(predict) != np.sign(labelArr[i]): errorCount += 1  # 返回数组中各元素的正负符号，用1和-1表示，并统计错误个数
+        # print(predict, labelArr[i])
 
     pd = []
     predict = np.array(pred).T
@@ -357,8 +236,7 @@ def tesRbf(k1=1.3):
         pd.append(Counter(list(item)).most_common()[0][0])
 
     ri = [0 if pd[i] == allLabel[i] else 1 for i in range(len(pd))]
-    print("训练集错误率: %.2f" % (sum(ri)/len(pd)))
-
+    print("训练集错误率: %.2f" % (sum(ri) / len(pd)))
 
     # print("训练集错误率: %.2f%%" % ((float(errorCount) / m) * 100))  # 打印错误率
 
