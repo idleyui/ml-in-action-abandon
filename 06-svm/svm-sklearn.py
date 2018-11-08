@@ -18,7 +18,8 @@ def load_dataset1(filename):
 
 
 def sv():
-    datas = load_dataset1('data/post-operative.data')  # 加载训练集
+    datas = load_dataset1('std_train')  # 加载训练集
+    # datas = load_dataset1('data/post-operative.data')  # 加载训练集
     # dataArr, labelArr = load_dataset1('data/post-operative.data')  # 加载训练集
     d = np.insert(datas[0], 0, values=datas[2], axis=0)
     dArr = list(np.delete(d, (-1), axis=1))

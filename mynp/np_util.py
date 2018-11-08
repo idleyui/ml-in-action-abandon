@@ -82,9 +82,9 @@ def split_by_label_map(arr: np.ndarray):
     return label2array
 
 
-def split_by_label(arr: np.ndarray):
-    uniq_label = np.unique(arr[:, -1])
-    return [arr[np.where(arr[:, -1] == label)] for label in uniq_label]
+def split_by_label(arr: np.ndarray, index:int):
+    uniq_label = np.unique(arr[:, index])
+    return [arr[np.where(arr[:, index] == label)] for label in uniq_label]
 
 
 if __name__ == '__main__':

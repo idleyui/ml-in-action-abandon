@@ -1,0 +1,24 @@
+#- subject: subject name
+#  alg: algorithm name
+#  dataset:
+#    name: dataset name (file url generate by name)
+#    url: dataset original url
+#  solution:
+#    - name: solution1's name
+#      path: solution1's path
+items:
+  - subject: letter recognition
+    alg: knn
+    dataset:
+      name: letter recognition
+      url: https://archive.ics.uci.edu/ml/datasets/letter+recognition
+    solution:
+      - name:
+      - path:
+    note:
+
+  - subject: page block classification
+    alg: decision tree
+    dataset:
+      name: page blocks classification
+      url:

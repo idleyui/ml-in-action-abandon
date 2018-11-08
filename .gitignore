@@ -3,3 +3,5 @@ data/
 out/
 .pytest_cache/
 ipynb_checkpoints/
+Datasets/
+dl/

@@ -22,7 +22,7 @@ def letter_recognition():
             train_data, test_data = np.vsplit(data, np.array([train_size]))
 
             re = [classify0(item, train_data, labels, k) == labels[train_size + i] for i, item in enumerate(test_data)]
-            right = Counter(re).most_common()[0][1];
+            right = Counter(re).most_common()[0][1]
 
             print("train with %d data item and k=%d, test with %d data item, %d item is right, accuracy is %.2f%%"
                   % (train_size, k, test_size, right, (right / test_size) * 100))

@@ -1,7 +1,11 @@
-import numpy as np
-from mynp import np_util
 
-arr = np.array([1,2,2,3]).reshape((2,2))
-print(max(arr[:,0]))
-l = [[4,1],[1,9]]
-print(max(l))
+import random
+
+
+l = [0] * 1000 + [1] * 1000
+random.shuffle(l)
+
+for i in range(len(l)):
+    l[i] = 1 if l[i] == 0 else -1
+
+print(len(l))

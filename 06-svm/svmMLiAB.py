@@ -251,7 +251,7 @@ def load_dataset1(filename):
     data = np_util.str_feature_to_vector(d)
 
     # return label -> array map
-    return np_util.split_by_label(data)
+    return np_util.split_by_label(data, -1)
 
 
 def smoP(dataMatIn, classLabels, C, toler, maxIter, kTup=('lin', 0)):
