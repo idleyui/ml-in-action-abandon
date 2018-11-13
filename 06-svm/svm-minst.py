@@ -186,11 +186,12 @@ def smoP(dataMatIn, classLabels, C, toler, maxIter, kTup=('lin', 0)):
 
 def one2rest():
     # load train and test data
-    data = pd.read_csv('std_train', delimiter=',').values[:500]
+    data = pd.read_csv('std_train', delimiter=',').values
     test_data = pd.read_csv('std_test', delimiter=',').values
     svms = []
     # k1 = 1.3
-    k1 = 0.05
+    # k1 = 0.05
+    k1 = 5.5
 
     # check if there are saved svms
     cal = True
@@ -212,7 +213,7 @@ def one2rest():
         l1 = np.insert(label_i, 0, values=label_rest, axis=0)
         label_train = list(l1)
         if cal:
-            svms.append(smoP(data_train, label_train, 5, 0.0001, 100, ('rbf', k1)))
+            svms.append(smoP(data_train, label_train, 150, 0.0001, 100, ('rbf', k1)))
         print('svms:', len(svms[i][1]))
         dataArr.append(data_train)
         labelArr.append(label_train)
