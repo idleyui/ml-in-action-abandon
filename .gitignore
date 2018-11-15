@@ -4,4 +4,11 @@ out/
 .pytest_cache/
 ipynb_checkpoints/
 Datasets/
-dl/
+cifar-10/
+mnist_data_jpg/
+dl/cifar/data
+dl/cifar/model
+dl/course/data
+dl/course/datas
+dl/course/model
+dl/course/img
