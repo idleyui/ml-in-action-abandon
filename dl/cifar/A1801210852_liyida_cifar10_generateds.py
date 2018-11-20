@@ -73,11 +73,11 @@ def get_tfrecord(num, isTrain=True):
     img, label = read_tfRecord(tfRecord_path)
     img_batch, label_batch = tf.train.shuffle_batch([img, label], batch_size=num,
                                                     num_threads=2,
-                                                    capacity=1000,
-                                                    min_after_dequeue=700)
+                                                    capacity=50000,
+                                                    min_after_dequeue=49880)
     return img_batch, label_batch
 
 
 if __name__ == '__main__':
-    # generate_tfRecord()
-    get_tfrecord(200)
+    generate_tfRecord()
+    # get_tfrecord(200)

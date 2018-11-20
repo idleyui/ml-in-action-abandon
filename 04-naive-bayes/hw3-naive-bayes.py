@@ -5,6 +5,7 @@ import numpy as np
 
 def load_data(train_num=10000):
     d = np.loadtxt('data/nursery.data', delimiter=',', dtype=np.unicode)
+    np.random.shuffle(d)
     train, test = np.vsplit(np.delete(d, -1, axis=1), np.array([train_num]))
     mp = {item: i for i, item in enumerate(list(np.unique(d[:, -1])))}
     classes = np.array([mp[item] for item in d[:, -1]])
@@ -12,22 +13,23 @@ def load_data(train_num=10000):
 
 
 def trainNB0(data, classes):
+    # get prior probability
     class2cnt = Counter(classes)
-    c_len = len(np.unique(classes))
-    pNum = np.zeros((c_len, len(data[0])))
-    pDenom = np.zeros((1, c_len))
+    p = np.array([class2cnt[i] / len(classes) for i in range(len(class2cnt))])
+
+    # get conditional probability
+    c_len = len(class2cnt)
+    word_in_class_vector = np.zeros((c_len, len(data[0])))
+    cnt_word_in_class = np.zeros(c_len)
     for i, doc in enumerate(data):
-        pNum[classes[i]] += doc
-        pDenom[0][classes[i]] += sum(doc)
-    vector = [pNum[i] / pDenom[0][i] for i in range(len(pNum))]
-    p = [class2cnt[i] / len(classes) for i in range(5)]
+        word_in_class_vector[classes[i]] += doc
+        cnt_word_in_class[classes[i]] += sum(doc)
+    vector = [word_in_class_vector[i] / cnt_word_in_class[i] for i in range(c_len)]
     return np.array(vector), p
 
 
-def classify(vec2cls, vecs, ps):
-    p_list = []
-    for i in range(len(ps)):
-        p_list.append(sum(vec2cls * vecs[i]) * ps[i])
+def classify(test_item, vector, p):
+    p_list = [sum(test_item * vector[i]) * p[i] for i in range(len(p))]
     return p_list.index(max(p_list))
 
 
@@ -35,19 +37,6 @@ def word2vec(dic, arr):
     r = [0] * len(dic)
     for item in arr:
         r[dic[item]] = 1
-    return r
-
-
-def feature2vec(features, arr):
-    r = [0] * 27
-    base = 0
-    for i, item in enumerate(arr):
-        for j, jtem in enumerate(features[i]):
-            if jtem == item:
-                r[base + j] = 1
-            else:
-                r[base + j] = 0
-        base += len(features[i])
     return r
 
 
@@ -65,6 +54,19 @@ def dict_bayes(train_num=10000):
         if c == classes[train_num + i]:
             cnt += 1
     print("%.2f" % (cnt / len(test_mat)))
+
+
+def feature2vec(features, arr):
+    r = [0] * 27
+    base = 0
+    for i, item in enumerate(arr):
+        for j, jtem in enumerate(features[i]):
+            if jtem == item:
+                r[base + j] = 1
+            else:
+                r[base + j] = 0
+        base += len(features[i])
+    return r
 
 
 def feature_bayes(train_num=10000):

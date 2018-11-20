@@ -2,13 +2,13 @@
 import time
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
-import mnist_forward
-import mnist_backward
-import mnist_generateds
 
-# import A1801210852_liyida_mnist_backward as mnist_backward
+import A1801210852_liyida_cifar10_backward as mnist_backward
+import A1801210852_liyida_cifar10_forward as  mnist_forward
+import A1801210852_liyida_cifar10_generateds as mnist_generateds
+
 TEST_INTERVAL_SECS = 5
-TEST_NUM = 10000
+TEST_NUM = 100
 
 
 def tes():
@@ -27,28 +27,31 @@ def tes():
 
         img_batch, label_batch = mnist_generateds.get_tfrecord(TEST_NUM, isTrain=False)
 
-        while True:
-            with tf.Session() as sess:
-                ckpt = tf.train.get_checkpoint_state(mnist_backward.MODEL_SAVE_PATH)  # load ckpt model
-                if ckpt and ckpt.model_checkpoint_path:  # if model exist
-                    saver.restore(sess, ckpt.model_checkpoint_path)  # restore model
-                    global_step = ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1]  # restore global step
+        # while True:
+        with tf.Session() as sess:
+            ckpt = tf.train.get_checkpoint_state(mnist_backward.MODEL_SAVE_PATH)  # load ckpt model
+            # if ckpt and ckpt.model_checkpoint_path:  # if model exist
+            if ckpt and ckpt.all_model_checkpoint_paths:  # if model exist
+                coord = tf.train.Coordinator()
+                threads = tf.train.start_queue_runners(sess=sess, coord=coord)
+                for path in ckpt.all_model_checkpoint_paths:
+                    # saver.restore(sess, ckpt.model_checkpoint_path)  # restore model
+                    saver.restore(sess, path)  # restore model
+                    global_step = path.split('/')[-1].split('-')[-1]  # restore global step
 
-                    coord = tf.train.Coordinator()
-                    threads = tf.train.start_queue_runners(sess=sess, coord=coord)
                     xs, ys = sess.run([img_batch, label_batch])  # train batch size round
 
                     accuracy_score = sess.run(accuracy, feed_dict={x: xs,
                                                                    y_: ys})  # calculate accuracy
                     print("After %s training step(s), test accuracy = %g" % (global_step, accuracy_score))
 
-                    coord.request_stop()
-                    coord.join(threads)
+                coord.request_stop()
+                coord.join(threads)
 
-                else:  # no checkpoint return
-                    print('No checkpoint file found')
-                    return
-            time.sleep(TEST_INTERVAL_SECS)  # sleep time
+            else:  # no checkpoint return
+                print('No checkpoint file found')
+                return
+        time.sleep(TEST_INTERVAL_SECS)  # sleep time
 
 
 def main():

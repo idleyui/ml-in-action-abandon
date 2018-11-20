@@ -1,10 +1,10 @@
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
-import mnist_forward
+import A1801210852_liyida_cifar10_forward as mnist_forward
 import os
-import mnist_generateds
+import A1801210852_liyida_cifar10_generateds as mnist_generateds
 
-BATCH_SIZE = 200  # train batch size
+BATCH_SIZE = 100  # train batch size
 LEARNING_RATE_BASE = 0.1  # learning rate
 LEARNING_RATE_DECAY = 0.99  # decay
 REGULARIZER = 0.0001  # regularizer
