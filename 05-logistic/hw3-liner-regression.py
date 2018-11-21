@@ -11,8 +11,8 @@ def loadDataSet():
     return rating, gross, data
 
 
-def sigmoid(inX):
-    return 1.0 / (1 + np.exp(-inX))
+def sigmoid(x):
+    return 1.0 / (1 + np.exp(-x))
 
 
 def gradAscent(dataMatIn, classLabels):
