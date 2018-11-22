@@ -100,7 +100,6 @@ def recommend(dataMat, user, N=3, simMeas=cosSim, estMethod=standEst):
 
 
 def load_data():
-    # with open('../Datasets/anonymous-msweb/anonymous-msweb.test') as f:
     with open('../Datasets/anonymous-msweb/anonymous-msweb.data') as f:
         lines = f.readlines()
 
