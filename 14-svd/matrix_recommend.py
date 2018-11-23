@@ -19,12 +19,14 @@ def pearsSim(inA, inB):
 def cosSim(inA, inB):
     num = float(inA.T * inB)
     denom = la.norm(inA) * la.norm(inB)
+    if denom == 0:
+        return 0
     return 0.5 + 0.5 * (num / denom)
 
 
 class Recommend:
 
-    def __init__(self, X, est_func=None, similar_func=cosSim):
+    def __init__(self, X, est_func=None, est_strategy='avg', similar_func=cosSim):
         self.X = X
         self.U, self.Sigma, self.VT = svds(self.X)
         self.Sig4 = np.mat(np.eye(4) * self.Sigma[:4])
@@ -34,6 +36,7 @@ class Recommend:
         self.n = np.shape(X)[1]
         self.similar_matrix = np.zeros((self.n, self.n))
         self.build_similar_matrix()
+        self.est_strategy = est_strategy
 
     def build_similar_matrix(self):
         for i in range(self.n):
@@ -65,14 +68,27 @@ class Recommend:
         for j in np.where(self.X[user] > 0)[1]:
             similarity = self.similar_matrix[item, j]
             # print('the %d and %d similarity is: %f' % (item, j, similarity))
-            sim_cnt += similarity
+            # sim_cnt += similarity
+            # average strategy
+            sim_cnt += 1
             ratSimTotal += similarity * self.X[user, j]
         if sim_cnt == 0:
             return 0
         else:
             return ratSimTotal / sim_cnt
 
-    def recommend(self, user, N=3):
+    def max_estimate(self, item, user):
+        max = 0
+        for j in np.where(self.X[user] > 0)[1]:
+            similarity = self.similar_matrix[item, j]
+            # print('the %d and %d similarity is: %f' % (item, j, similarity))
+            # sim_cnt += similarity
+            # average strategy
+            if similarity > max:
+                max = similarity
+        return max
+
+    def recommend(self, user, N=10):
         """Recommend top N similar item for user
 
         steps:
@@ -96,7 +112,10 @@ class Recommend:
 
         item_scores = []
         for item in unrated_items:
-            score = self.estimate(item, user)
+            if self.est_strategy == 'avg':
+                score = self.estimate(item, user)
+            else:
+                score = self.max_estimate(item, user)
             # score = self.est_func(user, item)
             item_scores.append((item, score))
         return sorted(item_scores, key=lambda jj: jj[1], reverse=True)[:N]
@@ -152,12 +171,12 @@ def est_recommends(label2index, recommends, test_label, test):
     return total_recommend, total_visited
 
 
-def build_recommend_matrix(func, file):
+def build_recommend_matrix(func, file, str):
     # data = load_data('../Datasets/anonymous-msweb/anonymous-msweb.data')
     label, data = load_data('data/anonymous-msweb.data')
 
     t1 = timeit.default_timer()
-    r = Recommend(np.mat(data), func)
+    r = Recommend(np.mat(data), func, str)
     t2 = timeit.default_timer()
     print('use %d seconds to build similar matrix' % (t2 - t1))
 
@@ -177,7 +196,7 @@ def test_rec(file):
     # test = load_data('../Datasets/anonymous-msweb/anonymous-msweb.test')
     label, test = load_data('data/anonymous-msweb.test')
     label, _ = load_data('data/anonymous-msweb.data')
-    label2index = {label:i for i,label in enumerate(label)}
+    label2index = {label: i for i, label in enumerate(label)}
 
     total_recommend, total_visited = est_recommends(label2index, rec, label, test)
     print('recommend %d for users, visited %d' % (total_recommend, total_visited))
@@ -185,9 +204,7 @@ def test_rec(file):
 
 
 if __name__ == '__main__':
-    # print('use std method to recommend')
-    # build_recommend_matrix(None, 'data/std_mx')
-    print('use svd method to recommend')
-    # build_recommend_matrix('svd', 'data/svd_mx')
-    # test_rec('data/svd_mx')
-    test_rec('data/std_mx')
+    # build_recommend_matrix(None, 'data/std_avg_mx', 'avg')
+    # build_recommend_matrix(None, 'data/std_max_mx', 'max')
+    test_rec('data/std_avg_mx')
+    test_rec('data/std_max_mx')
