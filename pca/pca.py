@@ -3,6 +3,13 @@ import pandas as pd
 from scipy import stats
 
 
+def load(fileName, delim='\t'):
+    fr = open(fileName)
+    stringArr = [line.strip().split(delim) for line in fr.readlines()]
+    datArr = [map(float, line) for line in stringArr]
+    return np.mat(datArr)
+
+
 def pca(dataMat, topNfeat=9999999):
     meanVals = np.mean(dataMat, axis=0)
     meanRemoved = dataMat - meanVals  # remove mean
@@ -38,9 +45,13 @@ def main():
 
 
 def tp():
-    arr = np.array(range(9)).reshape(3,3)
-    pca(arr, 2)
+    arr = np.array([[-1, -2], [-1, 0], [0, 0], [2, 1], [0, 1]])
+    d, r = pca(arr, 1)
+    print(d)
+
 
 if __name__ == '__main__':
-    main()
+    # main()
     # tp()
+    data = load('data/misc.txt')
+    print(data)
