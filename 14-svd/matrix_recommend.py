@@ -3,6 +3,12 @@ from numpy import linalg as la
 from scipy.sparse.linalg import svds
 import timeit
 import pickle
+import argparse
+
+parser = argparse.ArgumentParser(description="Web Page Recommendation")
+parser.add_argument('--run', type=str, default='build')  # build | test
+parser.add_argument('--est_method', type=str, default='all')  # std | svd | all
+parser.add_argument('--N', type=int, default=10)  # top N for test < 10
 
 
 def ecludSim(inA, inB):
@@ -166,7 +172,7 @@ def est_recommends(label2index, recommends, test_label, test):
             if test[i][item[0]] > 0:
                 visited += 1
         total_visited += visited
-        total_recommend += len(recommends)
+        total_recommend += len(recommends[i])
         print('recommend %d for user %d, visited %d' % (len(recommends[i]), test_label[i], visited))
     return total_recommend, total_visited
 
@@ -189,22 +195,62 @@ def build_recommend_matrix(func, file, str):
         pickle.dump(rec, f)
 
 
-def test_rec(file):
-    with open(file, 'rb') as f:
-        rec = pickle.load(f)
+def test_recommend(file, N=10):
+    """Recommendation test
 
-    # test = load_data('../Datasets/anonymous-msweb/anonymous-msweb.test')
-    label, test = load_data('data/anonymous-msweb.test')
+    :param file: file to load recommend matrix
+    :param N: use Top N to test
+    :return:
+    """
+    with open(file, 'rb') as f:
+        recommends = pickle.load(f)
+
+    test_label, test = load_data('data/anonymous-msweb.test')
     label, _ = load_data('data/anonymous-msweb.data')
     label2index = {label: i for i, label in enumerate(label)}
 
-    total_recommend, total_visited = est_recommends(label2index, rec, label, test)
-    print('recommend %d for users, visited %d' % (total_recommend, total_visited))
-    print('visited rate: %f' % (total_visited / total_recommend))
+    total_visited = 0
+    total_recommend = 0
+    visited_user = 0
+    for i in range(len(test)):
+        j = label2index[test_label[i]]
+        visited = 0
+        for r in range(N):
+            item = recommends[j][r]
+            # for item in recommends[j]:
+            if test[i][item[0]] > 0:
+                visited += 1
+        if visited > 0:
+            visited_user += 1
+        total_visited += visited
+        total_recommend += len(recommends[i])
+        # print('recommend %d for user %d, visited %d' % (len(recommends[i]), test_label[i], visited))
+
+    # total_recommend, total_visited = est_recommends(label2index, , label, test)
+    print('recommend for %d users, %d users visited recommend page, rate: %f' % (
+        len(test), visited_user, visited_user / len(test)))
+    print('recommend %d for users, visited %d, visited rate: %f' % (
+        total_recommend, total_visited, total_visited / total_recommend))
+
+
+def main():
+    args = parser.parse_args()
+
+    if args.run == 'build':
+        if args.est_method == 'all':
+            build_recommend_matrix(None, 'data/std_avg_mx', 'avg')
+            build_recommend_matrix('svd', 'data/svd_avg_mx', 'avg')
+        elif args.est_mehtod == 'std':
+            build_recommend_matrix(None, 'data/std_avg_mx', 'avg')
+        elif args.est_mehtod == 'svd':
+            build_recommend_matrix('svd', 'data/svd_avg_mx', 'avg')
+    else:
+        if args.N > 10 or args.N < 1:
+            print('N is invalid')
+        else:
+            test_recommend('data/std_avg_mx', args.N)
+            test_recommend('data/svd_avg_mx', args.N)
 
 
 if __name__ == '__main__':
-    # build_recommend_matrix(None, 'data/std_avg_mx', 'avg')
-    # build_recommend_matrix(None, 'data/std_max_mx', 'max')
-    test_rec('data/std_avg_mx')
-    test_rec('data/std_max_mx')
+    main()
